@@ -89,10 +89,10 @@ void openvr::setupQuadCamera()
     }
 
     float vertices[] = {
-         0.2f,  0.2f, 0.0f,  // top right
-         0.2f, -0.2f, 0.0f,  // bottom right
-        -0.2f, -0.2f, 0.0f,  // bottom left
-        -0.2f,  0.2f, 0.0f   // top left
+         0.3f,  0.3f, 0.0f,  // top right
+         0.3f, -0.3f, 0.0f,  // bottom right
+        -0.3f, -0.3f, 0.0f,  // bottom left
+        -0.3f,  0.3f, 0.0f   // top left
     };
 
 
@@ -412,12 +412,12 @@ Matrix4 openvr::getCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
     //Not multiplying by m_mat4HMDPose because I dont't want the square to move around as I move the head.
   if (nEye == vr::Eye_Left)
   {
-      matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft;
+      matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose;
 
   }
   else if (nEye == vr::Eye_Right)
   {
-      matMVP = m_mat4ProjectionRight * m_mat4eyePosRight;
+      matMVP = m_mat4ProjectionRight * m_mat4eyePosRight * m_mat4HMDPose;
   }
 
   return matMVP;
