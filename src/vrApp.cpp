@@ -405,11 +405,9 @@ void openvr::createFrameBuffer(int nWidth, int nHeight, FramebufferDesc &framebu
 Matrix4 openvr::getCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 {
 
-    Matrix4 pose = m_mat4HMDPose;
-    pose.setRow(3, Vector4(0.0, 0.0, 0.0, 1.0));
+  
     Matrix4 matMVP = Matrix4();
 
-    //Not multiplying by m_mat4HMDPose because I dont't want the square to move around as I move the head.
   if (nEye == vr::Eye_Left)
   {
       matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose;
