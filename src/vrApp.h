@@ -62,12 +62,12 @@ class openvr {
 
 	GLuint shader_scene;
 	GLuint shader_quad;
-	GLuint shader_quad_camera;
+	GLuint shader_square;
 
 
 	GLuint vao_scene;
 	GLuint vao_quad;
-	unsigned int vao_quad_camera;
+	unsigned int vao_square;
 	GLuint texture_camera;
 
 	//TFG

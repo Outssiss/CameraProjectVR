@@ -73,12 +73,12 @@ bool openvr::init() {
 
 void openvr::createShader() {
     Shader lshader_quad("res/shaders/fbovertex.vert", "res/shaders/fbofragment.frag");
-    Shader lshader_quad_camera("res/shaders/quad.vert", "res/shaders/quad.frag");
+    Shader lshader_square("res/shaders/quad.vert", "res/shaders/quad.frag");
 	
     shader_quad = lshader_quad.ID;
-    shader_quad_camera = lshader_quad_camera.ID; //TFG
+    shader_square = lshader_square.ID; //TFG
 
-    m_nQuadCameraMatrixLocation = glGetUniformLocation(shader_quad_camera, "matrix");
+    m_nQuadCameraMatrixLocation = glGetUniformLocation(shader_square, "matrix");
 }
 
 void openvr::setupQuadCamera()
@@ -103,11 +103,11 @@ void openvr::setupQuadCamera()
     };
 
     unsigned int VBO, VAO, EBO;
-    glGenVertexArrays(1, &vao_quad_camera);
+    glGenVertexArrays(1, &vao_square);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
-    glBindVertexArray(vao_quad_camera);
+    glBindVertexArray(vao_square);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -115,7 +115,7 @@ void openvr::setupQuadCamera()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint posCamAttrib = glGetAttribLocation(shader_quad_camera, "position");
+    GLint posCamAttrib = glGetAttribLocation(shader_square, "position");
 
     glVertexAttribPointer(posCamAttrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(posCamAttrib);
@@ -430,12 +430,12 @@ void openvr::renderScene(vr::Hmd_Eye nEye) {
     glClearColor(0.3f, 0.2f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(shader_quad_camera);
+    glUseProgram(shader_square);
     Matrix4 currentViewProjectionMatrix = getCurrentViewProjectionMatrix(nEye);
     currentViewProjectionMatrix.setRow(3, Vector4(0.0, 0.0, 0.0, 1.0));
 
     glUniformMatrix4fv(m_nQuadCameraMatrixLocation, 1, GL_TRUE, currentViewProjectionMatrix.get());
-    glBindVertexArray(vao_quad_camera);
+    glBindVertexArray(vao_square);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   
 }
