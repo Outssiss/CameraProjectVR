@@ -30,7 +30,7 @@ class openvr {
 	uint32_t m_nRenderHeight;
 
 
-	glm::mat4 m_model;
+	Matrix4 m_model;
 
 	Matrix4 m_mat4HMDPose;
 	Matrix4 m_mat4eyePosLeft;
@@ -85,7 +85,7 @@ class openvr {
 	uint32_t m_nCameraFrameWidth;
 	uint32_t m_nCameraFrameHeight;
 
-
+	vr::TrackingUniverseOrigin m_rTrackingUniverse;
 
 	vr::TrackedCameraHandle_t m_hTrackedCamera;
 

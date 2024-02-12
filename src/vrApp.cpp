@@ -13,12 +13,17 @@ void ThreadSleep(unsigned long nMilliseconds)
 
 bool openvr::init() { 
 	glfwInit();
-  width = 640; height = 320;
+    width = 640; height = 320;
+    
+
+
 	window = glfwCreateWindow(width, height, "Opengl", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	glewExperimental = GL_TRUE;
 	GLenum nGlewError = glewInit();
+
+
 
 	if (nGlewError != GLEW_OK)
 	{
@@ -27,7 +32,7 @@ bool openvr::init() {
 	}
 	glGetError(); // to clear the error caused deep in GLEW
 
-	textureLoader::Init();
+	//textureLoader::Init();
 
 	vr::EVRInitError eError = vr::VRInitError_None;
 	m_pHMD = vr::VR_Init(&eError, vr::VRApplication_Scene);
@@ -39,10 +44,13 @@ bool openvr::init() {
 		return false;
 	}
 
-	m_fNearClip = 0.1f;
+    m_rTrackingUniverse = vr::ETrackingUniverseOrigin::TrackingUniverseStanding;
+    vr::VRCompositor()->SetTrackingSpace(m_rTrackingUniverse);
+
+	m_fNearClip = 0.01f;
 	m_fFarClip = 30.0f;
 
-  m_model = mat4(1.0f);
+    m_model = Matrix4();
 	//initGL
 	createShader();
 	setupScene();
@@ -92,9 +100,10 @@ void openvr::setupQuadCamera()
          0.3f,  0.3f, 0.0f,  // top right
          0.3f, -0.3f, 0.0f,  // bottom right
         -0.3f, -0.3f, 0.0f,  // bottom left
-        -0.3f,  0.3f, 0.0f   // top left
+        -0.3f,  0.3f, 0.0f    // top left
     };
 
+    for (int i = 0; i < 12; i++) vertices[i] *= 1.0f;
 
 
     unsigned int indices[] = {  // note that we start from 0!
@@ -294,28 +303,24 @@ Matrix4 openvr::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye) {
 
 	vr::HmdMatrix44_t mat = m_pHMD->GetProjectionMatrix(nEye, m_fNearClip, m_fFarClip);
 
-	//return a glm mat4
 
     Matrix4 mat4OpenVR = Matrix4(mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
-        mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
-        mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
-        mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]);
+                                 mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
+                                 mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
+                                 mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]);
 
     return mat4OpenVR;
-
-
-
 }
 
 Matrix4 openvr::GetHMDMatrixPoseEye(vr::Hmd_Eye nEye)
 {
 
-	vr::HmdMatrix34_t matEyeRight = m_pHMD->GetEyeToHeadTransform(nEye);
+	vr::HmdMatrix34_t matEye = m_pHMD->GetEyeToHeadTransform(nEye);
 
-    Matrix4 mat4OpenVR = Matrix4(matEyeRight.m[0][0], matEyeRight.m[1][0], matEyeRight.m[2][0], 0.0,
-        matEyeRight.m[0][1], matEyeRight.m[1][1], matEyeRight.m[2][1], 0.0,
-        matEyeRight.m[0][2], matEyeRight.m[1][2], matEyeRight.m[2][2], 0.0,
-        matEyeRight.m[0][3], matEyeRight.m[1][3], matEyeRight.m[2][3], 1.0f);
+    Matrix4 mat4OpenVR = Matrix4(matEye.m[0][0], matEye.m[1][0], matEye.m[2][0], 0.0,
+                                 matEye.m[0][1], matEye.m[1][1], matEye.m[2][1], 0.0,
+                                 matEye.m[0][2], matEye.m[1][2], matEye.m[2][2], 0.0,
+                                 matEye.m[0][3], matEye.m[1][3], matEye.m[2][3], 1.0f);
 
     return mat4OpenVR.invert();
 }
@@ -404,21 +409,20 @@ void openvr::createFrameBuffer(int nWidth, int nHeight, FramebufferDesc &framebu
 
 Matrix4 openvr::getCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 {
-
   
     Matrix4 matMVP = Matrix4();
 
-  if (nEye == vr::Eye_Left)
-  {
-      matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose;
+    if (nEye == vr::Eye_Left)
+    {
+        matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft;
 
-  }
-  else if (nEye == vr::Eye_Right)
-  {
-      matMVP = m_mat4ProjectionRight * m_mat4eyePosRight * m_mat4HMDPose;
-  }
+    }
+    else if (nEye == vr::Eye_Right)
+    {
+        matMVP = m_mat4ProjectionRight * m_mat4eyePosRight;
+    }
 
-  return matMVP;
+    return matMVP;
 }
 
 void openvr::renderScene(vr::Hmd_Eye nEye) {
@@ -430,7 +434,6 @@ void openvr::renderScene(vr::Hmd_Eye nEye) {
 
     glUseProgram(shader_square);
     Matrix4 currentViewProjectionMatrix = getCurrentViewProjectionMatrix(nEye);
-    currentViewProjectionMatrix.setRow(3, Vector4(0.0, 0.0, 0.0, 1.0));
 
     glUniformMatrix4fv(m_nQuadCameraMatrixLocation, 1, GL_TRUE, currentViewProjectionMatrix.get());
     glBindVertexArray(vao_square);
