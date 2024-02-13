@@ -49,6 +49,8 @@ class openvr {
 	Matrix4 m_mat4TrackedCameraEyePosLeft;
 	Matrix4 m_mat4TrackedCameraEyePosRight;
 
+	GLuint texture_test;
+
 	vr::EVRTrackedCameraFrameType m_CameraFrameType;
 
 	float m_fTrackedCameraProjectionDistance;

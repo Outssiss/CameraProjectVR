@@ -32,7 +32,7 @@ bool openvr::init() {
 	}
 	glGetError(); // to clear the error caused deep in GLEW
 
-	//textureLoader::Init();
+	textureLoader::Init();
 
 	vr::EVRInitError eError = vr::VRInitError_None;
 	m_pHMD = vr::VR_Init(&eError, vr::VRApplication_Scene);
@@ -105,6 +105,7 @@ void openvr::setupQuadCamera()
 
     for (int i = 0; i < 12; i++) vertices[i] *= 1.0f;
 
+    texture_test = textureLoader::loadImage("res/textures/img_test.png");
 
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,  // first Triangle
@@ -129,7 +130,17 @@ void openvr::setupQuadCamera()
     glVertexAttribPointer(posCamAttrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(posCamAttrib);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //texcoords
+    GLint texAttrib = glGetAttribLocation(shader_square, "texcoord");
+    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (void*)(sizeof(GL_FLOAT) * 6));
+    glEnableVertexAttribArray(texAttrib);
+
+    //sampler uniform
+    GLint texpos = glGetAttribLocation(shader_square, "tex");
+    glUniform1i(texpos, 0);
+
+
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
@@ -144,7 +155,6 @@ void openvr::setupScene() {
     1.0,  1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
     -1.0,  1.0, 1.0, 1.0, 1.0, 0.0, 1.0
   };
-
 
   glGenVertexArrays(1, &vao_quad);
   glBindVertexArray(vao_quad);
@@ -435,8 +445,9 @@ void openvr::renderScene(vr::Hmd_Eye nEye) {
     glUseProgram(shader_square);
     Matrix4 currentViewProjectionMatrix = getCurrentViewProjectionMatrix(nEye);
 
-    glUniformMatrix4fv(m_nQuadCameraMatrixLocation, 1, GL_TRUE, currentViewProjectionMatrix.get());
+    glUniformMatrix4fv(m_nQuadCameraMatrixLocation, 1, GL_FALSE, currentViewProjectionMatrix.get());
     glBindVertexArray(vao_square);
+    glBindTexture(GL_TEXTURE_2D, texture_test);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   
 }
